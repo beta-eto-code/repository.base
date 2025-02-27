@@ -3,6 +3,7 @@
 namespace Repository\Base\Interfaces;
 
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Data\Provider\Interfaces\OperationResultInterface;
 use Data\Provider\Interfaces\QueryCriteriaInterface;
 

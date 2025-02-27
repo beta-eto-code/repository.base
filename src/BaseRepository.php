@@ -2,12 +2,12 @@
 
 namespace Repository\Base;
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Collection\Base\Interfaces\CollectionInterface;
 use Data\Provider\Interfaces\OperationResultInterface;
 use Data\Provider\Interfaces\PkOperationResultInterface;
 use Data\Provider\Interfaces\QueryCriteriaInterface;
 use Data\Provider\OperationResult;
-use Repository\Base\Interfaces\AccessRecipientContextInterface;
 use Repository\Base\Interfaces\PkCriteriaInterface;
 use Repository\Base\Interfaces\RemovableRepositoryInterface;
 use Repository\Base\Interfaces\SavableRepositoryInterface;

@@ -2,12 +2,12 @@
 
 namespace Repository\Base\Tests\Stubs;
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Collection\Base\Interfaces\CollectionItemInterface;
 use Data\Provider\Interfaces\PkOperationResultInterface;
 use Exception;
 use Repository\Base\BaseRepository;
 use Repository\Base\Filters\PkCriteria;
-use Repository\Base\Interfaces\AccessRecipientContextInterface;
 
 class UserRepository extends BaseRepository
 {

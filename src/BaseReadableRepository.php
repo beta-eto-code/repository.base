@@ -2,6 +2,7 @@
 
 namespace Repository\Base;
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Collection\Base\Collection;
 use Collection\Base\Interfaces\CollectionInterface;
 use Collection\Base\Interfaces\CollectionItemInterface;
@@ -12,7 +13,6 @@ use EmptyIterator;
 use Exception;
 use Iterator;
 use Model\Base\Interfaces\ModelInterface;
-use Repository\Base\Interfaces\AccessRecipientContextInterface;
 use Repository\Base\Interfaces\FetcherInterface;
 use Repository\Base\Interfaces\ModelFactoryInterface;
 use Repository\Base\Interfaces\PkCriteriaInterface;

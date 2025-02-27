@@ -3,6 +3,7 @@
 namespace Repository\Base\Interfaces;
 
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Collection\Base\Interfaces\CollectionInterface;
 use Collection\Base\Interfaces\CollectionItemInterface;
 use Data\Provider\Interfaces\PkOperationResultInterface;
