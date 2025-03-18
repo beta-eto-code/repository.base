@@ -2,6 +2,7 @@
 
 namespace Repository\Base\Fetchers;
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Collection\Base\ArrayDataCollectionItem;
 use Collection\Base\Interfaces\CollectionInterface;
 use Collection\Base\Interfaces\CollectionItemInterface;
@@ -67,8 +68,10 @@ class DataProviderFetcher implements FetcherInterface
         $this->itemFillCallback = $itemFillCallback;
     }
 
-    public function fill(CollectionInterface $collection): void
-    {
+    public function fill(
+        CollectionInterface $collection,
+        ?AccessRecipientContextInterface $recipientContext = null
+    ): void {
         $query = $this->createQuery($collection);
         foreach ($this->dataProvider->getIterator($query) as $destinationItem) {
             foreach ($collection as $originItem) {

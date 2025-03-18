@@ -2,6 +2,7 @@
 
 namespace Repository\Base\Fetchers;
 
+use Access\Scope\Interfaces\AccessRecipientContextInterface;
 use Collection\Base\Interfaces\CollectionInterface;
 use Collection\Base\Interfaces\CollectionItemInterface;
 use Data\Provider\Interfaces\CompareRuleInterface;
@@ -32,6 +33,8 @@ class RepositoryFetcher implements FetcherInterface
      */
     private $itemFillCallback;
 
+    private array $fetchListNames = [];
+
     /**
      * @throws Exception
      */
@@ -44,7 +47,8 @@ class RepositoryFetcher implements FetcherInterface
         ?QueryCriteriaInterface $query = null,
         ?ModelFactoryInterface $modelFactory = null,
         ?callable $compareCallback = null,
-        ?callable $itemFillCallback = null
+        ?callable $itemFillCallback = null,
+        array $fetchListNames = []
     ) {
         $emptyCompareCallback = empty($compareCallback);
         if ($emptyCompareCallback && empty($foreignKey)) {
@@ -64,12 +68,15 @@ class RepositoryFetcher implements FetcherInterface
         $this->modelFactory = $modelFactory;
         $this->compareCallback = $compareCallback;
         $this->itemFillCallback = $itemFillCallback;
+        $this->fetchListNames = $fetchListNames;
     }
 
-    public function fill(CollectionInterface $collection): void
-    {
+    public function fill(
+        CollectionInterface $collection,
+        ?AccessRecipientContextInterface $recipientContext = null
+    ): void {
         $query = $this->createQuery($collection);
-        foreach ($this->getRepositoryIterator($query) as $destinationItem) {
+        foreach ($this->getRepositoryCollection($query, $recipientContext) as $destinationItem) {
             foreach ($collection as $originItem) {
                 if ($this->isItemsLinked($originItem, $destinationItem)) {
                     $this->fillItem($originItem, $destinationItem);
@@ -99,15 +106,23 @@ class RepositoryFetcher implements FetcherInterface
                 if (!empty($value) && is_scalar($value)) {
                     yield $value;
                 }
-            };
+            }
         }
         return new EmptyIterator();
     }
 
-    private function getRepositoryIterator(QueryCriteriaInterface $query): Iterator
-    {
+    private function getRepositoryCollection(
+        QueryCriteriaInterface $query,
+        ?AccessRecipientContextInterface $recipientContext = null
+    ): CollectionInterface {
         return $this->modelFactory ?
-            $this->repository->getModelIterator($this->modelFactory, $query) : $this->repository->getIterator($query);
+            $this->repository->getModelCollection(
+                $this->modelFactory,
+                $query,
+                $recipientContext,
+                ...$this->fetchListNames
+            ) :
+            $this->repository->getCollection($query, $recipientContext, ...$this->fetchListNames);
     }
 
     private function isItemsLinked(CollectionItemInterface $originItem, CollectionItemInterface $destinationItem): bool

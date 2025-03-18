@@ -25,6 +25,10 @@ class RepositoryFetcherBuilder
      * @var callable|null
      */
     private $itemFillCallback = null;
+    /**
+     * @var string[]
+     */
+    private array $fetchListNames = [];
 
     public static function init(
         ReadableRepositoryInterface $repository,
@@ -81,6 +85,12 @@ class RepositoryFetcherBuilder
         return $this;
     }
 
+    public function setFetchListNames(string ...$fetchListNames): RepositoryFetcherBuilder
+    {
+        $this->fetchListNames = $fetchListNames;
+        return $this;
+    }
+
     /**
      * @throws Exception
      */
@@ -95,7 +105,8 @@ class RepositoryFetcherBuilder
             $this->query,
             $this->modelFactory,
             $this->compareCallback,
-            $this->itemFillCallback
+            $this->itemFillCallback,
+            $this->fetchListNames
         );
     }
 }
