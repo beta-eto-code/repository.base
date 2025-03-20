@@ -75,6 +75,10 @@ class RepositoryFetcher implements FetcherInterface
         CollectionInterface $collection,
         ?AccessRecipientContextInterface $recipientContext = null
     ): void {
+        if ($collection->count() === 0) {
+            return;
+        }
+
         $query = $this->createQuery($collection);
         foreach ($this->getRepositoryCollection($query, $recipientContext) as $destinationItem) {
             foreach ($collection as $originItem) {

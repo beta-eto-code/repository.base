@@ -72,6 +72,10 @@ class DataProviderFetcher implements FetcherInterface
         CollectionInterface $collection,
         ?AccessRecipientContextInterface $recipientContext = null
     ): void {
+        if ($collection->count() === 0) {
+            return;
+        }
+        
         $query = $this->createQuery($collection);
         foreach ($this->dataProvider->getIterator($query) as $destinationItem) {
             foreach ($collection as $originItem) {
