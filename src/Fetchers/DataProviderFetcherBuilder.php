@@ -17,6 +17,7 @@ class DataProviderFetcherBuilder
     private string $destinationKeyName = '';
     private ?ModelFactoryInterface $modelFactory = null;
     private ?QueryCriteriaInterface $query = null;
+    private ?string $compareKeyName = null;
     /**
      * @var callable|null
      */
@@ -69,6 +70,12 @@ class DataProviderFetcherBuilder
         return $this;
     }
 
+    public function setCompareKeyName(string $name): DataProviderFetcherBuilder
+    {
+        $this->compareKeyName = $name;
+        return $this;
+    }
+
     public function setCompareCallback(callable $callback): DataProviderFetcherBuilder
     {
         $this->compareCallback = $callback;
@@ -94,6 +101,7 @@ class DataProviderFetcherBuilder
             $this->isMultipleValue,
             $this->query,
             $this->modelFactory,
+            $this->compareKeyName,
             $this->compareCallback,
             $this->itemFillCallback
         );

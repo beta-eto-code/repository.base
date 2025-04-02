@@ -34,6 +34,7 @@ class RepositoryFetcher implements FetcherInterface
     private $itemFillCallback;
 
     private array $fetchListNames = [];
+    private ?string $compareKeyName = null;
 
     /**
      * @throws Exception
@@ -46,6 +47,7 @@ class RepositoryFetcher implements FetcherInterface
         bool $isMultipleValue = false,
         ?QueryCriteriaInterface $query = null,
         ?ModelFactoryInterface $modelFactory = null,
+        ?string $compareKeyName = null,
         ?callable $compareCallback = null,
         ?callable $itemFillCallback = null,
         array $fetchListNames = []
@@ -66,6 +68,7 @@ class RepositoryFetcher implements FetcherInterface
         $this->isMultipleValue = $isMultipleValue;
         $this->query = $query;
         $this->modelFactory = $modelFactory;
+        $this->compareKeyName = $compareKeyName;
         $this->compareCallback = $compareCallback;
         $this->itemFillCallback = $itemFillCallback;
         $this->fetchListNames = $fetchListNames;
@@ -80,13 +83,58 @@ class RepositoryFetcher implements FetcherInterface
         }
 
         $query = $this->createQuery($collection);
-        foreach ($this->getRepositoryCollection($query, $recipientContext) as $destinationItem) {
+        $destinationCollection = $this->getRepositoryCollection($query, $recipientContext);
+        if (empty($this->compareCallback)) {
+            $this->fillByMappedList($collection, $destinationCollection);
+            return;
+        }
+
+        foreach ($destinationCollection as $destinationItem) {
             foreach ($collection as $originItem) {
                 if ($this->isItemsLinked($originItem, $destinationItem)) {
                     $this->fillItem($originItem, $destinationItem);
                 }
             }
         }
+    }
+
+    private function fillByMappedList(CollectionInterface $collection, CollectionInterface $destinationCollection): void
+    {
+        $mappedList = $this->getMappedList($destinationCollection);
+        foreach ($collection as $item) {
+            $originKey = $item->getValueByKey($this->foreignKey);
+            $keyList = is_array($originKey) ? $originKey : [$originKey];
+            foreach ($keyList as $key) {
+                $destinationItem = $mappedList[$key] ?? null;
+                if (is_null($destinationItem)) {
+                    continue;
+                }
+
+                $destinationItem = is_array($destinationItem) ? $destinationItem : [$destinationItem];
+                foreach ($destinationItem as $value) {
+                    $this->fillItem($item, $value);
+                }
+            }
+        }
+    }
+
+    private function getMappedList(CollectionInterface $collection): array
+    {
+        $resultList = [];
+        $compareKeyName = $this->compareKeyName ?? $this->destinationKey;
+        foreach ($collection as $originItem) {
+            $originalValue = $originItem->getValueByKey($compareKeyName);
+            $value = is_iterable($originalValue) ? $originalValue : [$originalValue];
+            foreach ($value as $key) {
+                if ($this->isMultipleValue) {
+                    $resultList[$key][] = $originItem;
+                } else {
+                    $resultList[$key] = $originItem;
+                }
+            }
+        }
+
+        return $resultList;
     }
 
     private function createQuery(CollectionInterface $collection): QueryCriteriaInterface

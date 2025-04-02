@@ -29,6 +29,7 @@ class RepositoryFetcherBuilder
      * @var string[]
      */
     private array $fetchListNames = [];
+    private ?string $compareKeyName = null;
 
     public static function init(
         ReadableRepositoryInterface $repository,
@@ -73,6 +74,12 @@ class RepositoryFetcherBuilder
         return $this;
     }
 
+    public function setCompareKeyName(string $name): RepositoryFetcherBuilder
+    {
+        $this->compareKeyName = $name;
+        return $this;
+    }
+
     public function setCompareCallback(callable $callback): RepositoryFetcherBuilder
     {
         $this->compareCallback = $callback;
@@ -104,6 +111,7 @@ class RepositoryFetcherBuilder
             $this->isMultipleValue,
             $this->query,
             $this->modelFactory,
+            $this->compareKeyName,
             $this->compareCallback,
             $this->itemFillCallback,
             $this->fetchListNames

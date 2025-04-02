@@ -25,6 +25,8 @@ class DataProviderFetcher implements FetcherInterface
     private bool $isMultipleValue;
     private ?QueryCriteriaInterface $query;
     private ?ModelFactoryInterface $modelFactory;
+
+    private ?string $compareKeyName;
     /**
      * @var callable|null
      */
@@ -45,6 +47,7 @@ class DataProviderFetcher implements FetcherInterface
         bool $isMultipleValue = false,
         ?QueryCriteriaInterface $query = null,
         ?ModelFactoryInterface $modelFactory = null,
+        ?string $compareKeyName = null,
         ?callable $compareCallback = null,
         ?callable $itemFillCallback = null
     ) {
@@ -64,6 +67,7 @@ class DataProviderFetcher implements FetcherInterface
         $this->isMultipleValue = $isMultipleValue;
         $this->query = $query;
         $this->modelFactory = $modelFactory;
+        $this->compareKeyName = $compareKeyName;
         $this->compareCallback = $compareCallback;
         $this->itemFillCallback = $itemFillCallback;
     }
@@ -77,13 +81,63 @@ class DataProviderFetcher implements FetcherInterface
         }
         
         $query = $this->createQuery($collection);
-        foreach ($this->dataProvider->getIterator($query) as $destinationItem) {
+        $destinationIterator = $this->dataProvider->getIterator($query);
+        if (empty($this->compareCallback)) {
+            $this->fillByMappedList($collection, $destinationIterator);
+            return;
+        }
+
+        foreach ($destinationIterator as $destinationItem) {
             foreach ($collection as $originItem) {
                 if ($this->isItemsLinked($originItem, $destinationItem)) {
                     $this->fillItem($originItem, $destinationItem);
                 }
             }
         }
+    }
+
+    private function fillByMappedList(CollectionInterface $collection, Iterator $destinationIterator): void
+    {
+        $mappedList = $this->getMappedList($destinationIterator);
+        foreach ($collection as $item) {
+            $originKey = $item->getValueByKey($this->foreignKey);
+            $keyList = is_array($originKey) ? $originKey : [$originKey];
+            foreach ($keyList as $key) {
+                $destinationItem = $mappedList[$key] ?? null;
+                if (is_null($destinationItem)) {
+                    continue;
+                }
+
+                $destinationItem = is_array($destinationItem) ? $destinationItem : [$destinationItem];
+                if (!$this->isMultipleValue) {
+                    $this->fillItem($item, $destinationItem);
+                    continue;
+                }
+
+                foreach ($destinationItem as $value) {
+                    $this->fillItem($item, $value);
+                }
+            }
+        }
+    }
+
+    private function getMappedList(Iterator $iterator): array
+    {
+        $resultList = [];
+        $compareKeyName = $this->compareKeyName ?? $this->destinationKey;
+        foreach ($iterator as $originItem) {
+            $originalValue = $originItem[$compareKeyName] ?? [];
+            $value = is_iterable($originalValue) ? $originalValue : [$originalValue];
+            foreach ($value as $key) {
+                if ($this->isMultipleValue) {
+                    $resultList[$key][] = $originItem;
+                } else {
+                    $resultList[$key] = $originItem;
+                }
+            }
+        }
+
+        return $resultList;
     }
 
     private function createQuery(CollectionInterface $collection): QueryCriteriaInterface
@@ -107,7 +161,7 @@ class DataProviderFetcher implements FetcherInterface
                 if (!empty($value) && is_scalar($value)) {
                     yield $value;
                 }
-            };
+            }
         }
         return new EmptyIterator();
     }
