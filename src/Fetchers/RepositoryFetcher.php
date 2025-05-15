@@ -172,7 +172,7 @@ class RepositoryFetcher implements FetcherInterface
                 $this->modelFactory,
                 $query,
                 $recipientContext,
-                ...$this->fetchListNames
+                ...$this->repository->getFetcherListByNames(...$this->fetchListNames)
             ) :
             $this->repository->getCollection($query, $recipientContext, ...$this->fetchListNames);
     }
