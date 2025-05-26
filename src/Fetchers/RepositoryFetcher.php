@@ -141,7 +141,7 @@ class RepositoryFetcher implements FetcherInterface
     {
         $query = $this->query ?? new QueryCriteria();
         $foreignKeyValues = iterator_to_array($this->getForeignKeyValueIterator($collection));
-        if (!empty($foreignKeyValues) && !empty($this->destinationKey)) {
+        if (!empty($this->destinationKey)) {
             $query->addCriteria($this->destinationKey, CompareRuleInterface::IN, $foreignKeyValues);
         }
         return $query;
